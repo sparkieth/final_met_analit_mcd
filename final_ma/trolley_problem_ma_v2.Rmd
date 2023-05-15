@@ -1,0 +1,209 @@
+---
+title: "Proyecto Final Métodos Analíticos"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+```{r}
+#install.packages(c("devtools","rstan","animation","ellipse","gt"))
+#install.packages(c("coda","mvtnorm","devtools","loo","dagitty","shape"))
+#devtools::install_github("rmcelreath/rethinking")
+library(renv)
+library(devtools)
+library(rstan)
+library(cmdstanr)
+library(rethinking)
+library(tidyverse)
+library(stats)
+library(ggplot2)
+library(animation)
+library(ellipse)
+library(base)
+library(dplyr)
+library(stringr)
+library(magrittr)
+library(gt)
+
+data(Trolley)
+datos<-Trolley
+
+```
+## Planteamiento del problema y contexto.
+
+El problema del tranvía es un dilema moral planteado originalmente por la filósofa inglesa Philippa Foot en 1967. Este problema consiste en que un agente puede accionar una palanca  que, de activarse, permite que un tranvía en movimiento cambie de vías. De no accionar la palanca, cinco individuos que están sobre las vías son arrollados por el tranvía, falleciendo. De accionar la palanca, fallece una sola persona, ubicada sobre las vías a las que se desvía el tranvía.
+
+Las respuestas del agente en control de la palanca pueden variar de acuerdo al número de personas involucradas en el problema, el juicio moral del agente, entre otros factores. Con tal de dar respuesta a qué factores influyen sobre la decisión que toma el agente, los investigadores Fiery Cushman, Liane Young y Mare Hauser de la la universidad de Harvard estudian el efecto de tres principios: 1) el de intención: el daño como objetivo es mayor al daño como daño colateral; 2) el de acción: el daño como acción es mayor al daño como omisión; 3) el de contacto: el daño físico es peor al daño no físico. Diversos investigadores se han preguntado si el juicio moral es  controlado o es un proceso automático (Bargh, 1999). El desarrollo  moral de los niños se enfoca en justificaciones más que en juicios (Kohlberg, 1969). La gente genera juicios morales al razonar sobre su propia justificación y si los juicios  morales surgen de un proceso auto cognitivo (Haidt. 2001).
+
+No obstante, hay una falta de método experimental que 
+vincula los datos al juicio moral. El estudio de Harvard 
+compara juicios entre algunos pares de escenarios variados 
+para enfocarse en un factor a la vez. Este factor cuando 
+varía produce juicios morales divergentes. Se estudiaron a 
+personas de 37 años en promedio, 58% hombres, angloparlantes
+ de EEUU, Canadá y Reino Unido, 25% tuvieron educación en 
+ filosofía moral. Cada uno recibió 32 escenarios morales 
+ separados en dos . Los sujetos los clasificaron en gravedad
+  de la acción omisión de 1(prohibido) a 7 (obligatorio), 
+  justificando sus respuestas
+
+
+## Problema del tranvía (trolley problem)
+Descripción de variables.
+
+case: Identifica la historia que se presento a los sujetos, cada una tiene una combinación diferente de tratamientos (*string*)
+
+response: Juicio de los participantes sobre qué tan apropiado es tomar una acción en la historia (*categorical*: 1: forbidden  7: mandatory)
+
+order: Orden en que las historias se presentaron al participante (integer)
+
+id: Identificador del participante (factor)
+
+age: Edad del participante en años (integer)
+
+male: Género del participante, hombre es igual a 1, mujer a 0
+
+edu: Nivel educativo más alto alcanzado por el participante
+
+action: Código para el tratamiento "acción" en la historia (1) o inacción (0)
+
+intention: Código para el tratamiento "intención" (1) o "ausencia de intención" (0)
+
+contact: Código para el tratamiento "contacto" (1) o "ausencia de contacto" (0)
+
+story: Etiqueta que identifica los escenarios (factor)
+
+action2: Codificación alternativa de la acción que es la unión de las variables action y contact
+
+```{r}
+summary(datos %>% select(where(is.numeric)))
+
+```
+Estructura de variables
+```{r}
+str(datos)
+```
+No hay NAs
+```{r}
+is.na(datos) %>% head() %>% apply(2,sum)
+```
+
+
+# Variables de caracteres
+Se observa que la base de datos tiene 30 diferentes tipos de caso. La base de datos está balanceada para esta variable; esto es, cada caso tiene 331 observaciones.
+
+```{r}
+datos %>% pull(case) %>% table() %>%sort(decreasing=TRUE) %>% plot()
+```
+
+La variable educación está desbalancieada en favor de grado bachelor's, some college y master's principalmente.
+Educación superior
+```{r}
+datos %>% pull(edu) %>% table() %>% sort(decreasing=TRUE) %>% plot()
+
+```
+
+57% de los encuestados son hombres
+```{r}
+datos %>% pull(male) %>% table()
+```
+
+50% de los encuestados tiene 36 años o menos, mientras que la persona mayor es de 72 años. 
+
+```{r}
+quantile(datos$age)
+```
+```{r}
+hist(datos$age)
+```
+
+La variable intención está balanceada: 53% no vs 47% sí
+```{r}
+table(datos$intention) %>%prop.table()
+```
+
+80% tuvo acción de contacto y 20% no lo tuvo
+```{r}
+table(datos$contact) %>%prop.table()
+```
+
+63% de los encuestados tuvo contacto y acción
+```{r}
+table(datos$action2) %>%prop.table()
+```
+
+## Modelo Stan
+
+Los autores plantean variantes de tres modelos: 1) un modelo básico donde 
+la respuesta está en función de la acción, intención y contacto; 2) un modelo  donde se añaden variables de educación y edad, y 
+3) un modelo donde se añade una variable aleatoria Dirichlet 
+
+```{r}
+#renv::restore()
+N<-nrow(datos)
+edu_levels <- c( 6 , 1 , 8 , 4 , 7 , 2 , 5 , 3 )
+edu_new <- edu_levels[ datos$edu ]
+
+data_list <- list(
+    "N" = N,
+    "R" = datos$response,
+    "A" = datos$action,
+    "I" = datos$intention,
+    "C" = datos$contact,
+    "E" = edu_new,
+    "Y" = standardize(datos$age)
+)
+```
+
+```{r}
+#setwd("./final_met_analit_mcd/final.ma/")
+destino_dir<-""
+ruta_1 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_1.stan")
+modelo_1 <- cmdstan_model(ruta, dir=destino_dir)
+
+#ruta_2 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_2.stan")
+#modelo_2 <- cmdstan_model(ruta, dir=destino_dir)
+#ruta_3 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_dirichlet.stan")
+#modelo_3 <- cmdstan_model(ruta, dir=destino_dir)
+
+```
+```{r}
+muestras_1 <- modelo_1$sample(data = data_list, 
+                          chains = 4, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500)
+
+```
+
+```{r}
+muestras_2 <- modelo_2$sample(data = data_list, 
+                          chains = 4, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500)
+
+```
+
+```{r}
+muestras_3 <- modelo_3$sample(data = data_list, 
+                          chains = 4, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500)
+
+```
+
+
+## Referencias
+
+- Cushman, F., Young, L., & Hauser, M. (2006). The role of 
+conscious reasoning and intuition in moral judgment: 
+Testing three principles of harm. *Psychological science*, 1082-1089.

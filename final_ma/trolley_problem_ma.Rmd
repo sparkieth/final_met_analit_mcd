@@ -1,0 +1,132 @@
+
+
+
+```{r}
+library(renv)
+library(devtools)
+library(rethinking)
+library(tidyverse)
+library(cmdstanr)
+library(stan)
+library(stats)
+library(ggplot2)
+library(animation)
+library(ellipse)
+library(base)
+library(dplyr)
+library(stringr)
+library(magrittr)
+datos<-read.csv("sandbox_R/trolley.csv") %>%select(-X)
+head(datos)
+```
+## Planteamiento del problema y contexto.
+
+El problema del tranvía plantea un problema moral estudiado 
+por la psicología desde la década de 1970. Este problema 
+consiste en que un agente controla una palanca en la que, 
+de activarse, permite que un tren a velocidad cambie de 
+vías. Al hacerlo, matará a un determinado número de personas, 
+digamos 5. De no activar la palanca, el tren sigue su curso 
+y mata sólo a una persona. Las respuestas del agente en  
+control de la palanca pueden variar de acuerdo con 1) las 
+personas al otro lado del tranvía, 2) el juicio moral de la 
+persona y 3) justificaciones morales, entre otros.
+
+Al respecto, la universidad de Harvard mencionó que existen 
+tres principios: 1) el de intención: el daño como objetivo 
+es mayor al daño como daño colateral; 2) el de acción: el 
+daño como acción es mayor al daño como omisión; 3) el de 
+contacto: el daño físico es peor al daño no físico. Diversos
+ investigadores se han preguntado si el juicio moral es 
+ controlado o es un proceso automático (Bargh), el desarrollo
+  moral de los niños se enfoca en justificaciones más que 
+  en juicios (Kohlberg), la gente genera juicios morales al
+   razonar sobre su propia justificación y si los juicios 
+   morales surgen de un proceso auto cognitivo (Haidt).
+
+No obstante, hay una falta de experimentos que 
+vinculen los datos al juicio moral. El estudio de Harvard 
+compara juicios entre algunos pares de escenarios variados 
+para enfocarse en un factor a la vez, mismo que cuando 
+varía produce juicios morales divergentes. Se estudiaron a 
+personas de 37 años en promedio, 58% hombres, angloparlantes
+ de EEUU, Canadá y Reino Unido, 25% tuvieron educación en 
+ filosofía moral. Cada uno recibió 32 escenarios morales 
+ separados en dos . Los sujetos los clasificaron en gravedad
+  de la acción omisión de 1 (prohibido) a 7 (obligatorio), 
+  justificando sus respuestas
+
+
+## Problema del tranvía (trolley problem)
+Descripción de variables.
+
+case: a code that combines treatment and story labels (*string*)
+response: participant's rating of appropriateness of action in story (*categorical*: 1: forbidden  7: mandatory)
+order: integer order story appeared, within participant () #what is integer order story appeared
+id: participant id (factor)
+age: participant's age in years
+male: participant's gender; 1 for male, 0 for female
+edu: participant's highest educational level
+action: treatment code for story with action (1) or inaction (0)
+intention: treatment code for intent (1) or lack of intent (0)
+contact: treatmetn code for contact action (1) or lack of contact (0)
+story: factor label for basic scenario modified by treatments
+action2: alternative coding of action that is union of action and contact variables
+```{r}
+summary(datos)
+
+```
+Estructura de variables
+```{r}
+str(datos)
+```
+No hay nAs
+```{r}
+is.na(datos) %>%head() %>% apply(2,sum)
+```
+
+
+# Variables de caracteres
+Se observa que la base de datos tiene 30 diferentes tipos de caso. La base de datos está balanceada para esta variable; esto es, cada caso tiene 331 observaciones.
+
+```{r}
+datos %>% pull(case) %>% table() %>%sort(decreasing=TRUE) %>% plot()
+```
+
+La variable educación está desbalancieada en favor de grado bachelor's, some college y master's principalmente.
+Educación superior
+```{r}
+datos %>% pull(edu) %>% table() %>%sort(decreasing=TRUE)%>% plot()
+
+```
+
+57% de los encuestados son hombres
+```{r}
+datos %>% pull(male) %>% table()
+```
+
+50% de los encuestados tiene 36 años o menos, mientras que la persona mayor es de 72 años. 
+```{r}
+quantiles(datos$age)
+hist(datos$age)
+```
+
+La variable intención está balanceada: 53% no vs 47% sí
+```{r}
+table(datos$intention) %>%prop.table()
+```
+
+80% tuvo acción de contacto y 20% no lo tuvo
+```{r}
+table(datos$contact) %>%prop.table()
+```
+
+63% de los encuestados tuvo contacto y acción
+```{r}
+table(datos$action2) %>%prop.table()
+
+## Referencias
+
+- Cushman, F., Young, L., & Hauser, M. (2006). The role of 
+conscious reasoning and intuition in moral judgment: 
+Testing three principles of harm. *Psychological science*, 1082-1089.
