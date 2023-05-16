@@ -28,6 +28,9 @@ library(dplyr)
 library(stringr)
 library(magrittr)
 library(gt)
+library(tidyverse)
+library(DiagrammeR)
+setwd("./sandbox_R/final_met_analit_mcd")
 
 data(Trolley)
 datos<-Trolley
@@ -83,10 +86,6 @@ las respuestas se distribuyen OrderedLogit$(\phi_i,\alpha)$, donde $\alpha$ es
 el vector de los puntos de corte.
 
 ## Problema del tranvía (trolley problem)
-```{r}
-library(tidyverse)
-library(DiagrammeR)
-```
 
 
 ```{r}
@@ -228,7 +227,7 @@ data_list <- list(
 ```
 
 ```{r}
-setwd("./sandbox_R/final_met_analit_mcd")
+
 
 destino_dir<-"final_ma/"
 ruta_1 <- file.path("final_ma/trolley_stan_1.stan")
