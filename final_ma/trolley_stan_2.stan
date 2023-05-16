@@ -2,12 +2,13 @@
 
 data{
   int<lower=0> N;
-  int<lower=1, upper=7> R[N]; 
-  vector<lower=0>[N] A; 
-  vector<lower=0>[N] I; 
-  vector<lower=0>[N] C;
-  vector<lower=0>[N] E;
-  vector<lower=0>[N] Y;
+  int<lower=1> K;
+  array[N] int<lower=1,upper=K> R; 
+  array[N] int A; 
+  array[N] int I; 
+  array[N] int C;
+  array[N] int E;
+  array[N] int Y;
 }
 
 parameters{
@@ -17,6 +18,7 @@ parameters{
   real bE;
   real bY;
   real alpha;
+  ordered[K-1] CC;
 }
 
 model {
@@ -26,8 +28,13 @@ model {
   bC ~ normal(0, 0.5);  
   bE ~ normal(0, 0.5);  
   bY ~ normal(0, 0.5);  
+
+     for (k in 1:K-1) {
+    CC[k] ~ normal(0, 1);
+  }              
+
   for (i in 1:N)
-    R[i] ~ bernoulli_logit(alpha + bA*A[i] + bI*I[i] + bC*C[i] + bE*E[i] + bY*Y[i]);
+    R[i] ~ ordered_logistic(alpha + bA*A[i] + bI*I[i] + bC*C[i]+ bE*E[i] + bY*Y[i],CC);
 }
   
 }

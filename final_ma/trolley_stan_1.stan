@@ -21,7 +21,11 @@ model {
   alpha ~ normal(0, 1);                  
   bA ~ normal(0, 0.5);                   
   bI ~ normal(0, 0.5);                   
-  bC ~ normal(0, 0.5);                   
+  bC ~ normal(0, 0.5);
+
+   for (k in 1:K-1) {
+    CC[k] ~ normal(0, 1);
+  }              
   for (i in 1:N)
     R[i] ~ ordered_logistic(alpha + bA*A[i] + bI*I[i] + bC*C[i],CC);
 }
