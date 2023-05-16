@@ -40,7 +40,7 @@ El problema del tranvía es un dilema moral planteado originalmente por la filó
 Las respuestas del agente en control de la palanca pueden variar de acuerdo al número de personas involucradas en el problema, el juicio moral del agente, entre otros factores. Con tal de dar respuesta a qué factores influyen sobre la decisión que toma el agente, los investigadores Fiery Cushman, Liane Young y Mare Hauser de la universidad de Harvard estudian el efecto de tres principios: 1) el de acción: el daño como acción es mayor al daño como omisión; 2) el de intención: el daño como objetivo es mayor al daño como daño colateral ; 3) el de contacto: el daño físico es peor cuando involucra contacto directo con la persona dañada. Diversos investigadores se han preguntado si el juicio moral es  controlado o es un proceso automático (Bargh, 1999). Hay quienes argumentan que el desarrollo  moral de los niños se enfoca en justificaciones más que en juicios (Kohlberg, 1969). Mientras que otros sugieren que la gente genera juicios morales al razonar sobre su propia justificación y si los juicios  morales surgen de un proceso auto cognitivo (Haidt. 2001).
 
 
-![Ejemplos de escenarios mostrando acción, intención y contacto. Fuente: Statistical Rethinking. 2023. ](C:/Users/Alejandro Salazar/Documents/ITAM/Segundo semestre/Métodos Analíticos/proyecto_final/imagenes/accion_intencion_contacto.png)
+![Ejemplos de escenarios mostrando acción, intención y contacto. Fuente: Statistical Rethinking. 2023. ](./imagenes/accion_intencion_contacto.png)
 
 No obstante, hay una falta de método experimental que 
 vincula los datos al juicio moral. El estudio de Harvard 
