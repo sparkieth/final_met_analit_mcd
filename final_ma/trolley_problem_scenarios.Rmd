@@ -37,12 +37,75 @@ datos<-Trolley
 
 El problema del tranvía es un dilema moral planteado originalmente por la filósofa inglesa Philippa Foot en 1967. Este problema consiste en que un agente puede accionar una palanca  que, de activarse, permite que un tranvía en movimiento cambie de vías. De no accionar la palanca, cinco individuos que están sobre las vías son arrollados por el tranvía, falleciendo. De accionar la palanca, fallece una sola persona, ubicada sobre las vías a las que se desvía el tranvía.
 
-Las respuestas del agente en control de la palanca pueden variar de acuerdo al número de personas involucradas en el problema, el juicio moral del agente, entre otros factores. Con tal de dar respuesta a qué factores influyen sobre la decisión que toma el agente, los investigadores Fiery Cushman, Liane Young y Mare Hauser de la la universidad de Harvard estudian el efecto de tres principios: 1) el de intención: el daño como objetivo es mayor al daño como daño colateral; 2) el de acción: el daño como acción es mayor al daño como omisión; 3) el de contacto: el daño físico es peor al daño no físico. Diversos investigadores se han preguntado si el juicio moral es  controlado o es un proceso automático (Bargh, 1999). El desarrollo  moral de los niños se enfoca en justificaciones más que en juicios (Kohlberg, 1969). La gente genera juicios morales al razonar sobre su propia justificación y si los juicios  morales surgen de un proceso auto cognitivo (Haidt. 2001).
+Las respuestas del agente en control de la palanca pueden variar de acuerdo al número de personas involucradas en el problema, el juicio moral del agente, entre otros factores. Con tal de dar respuesta a qué factores influyen sobre la decisión que toma el agente, los investigadores Fiery Cushman, Liane Young y Mare Hauser de la universidad de Harvard estudian el efecto de tres principios: 1) el de intención: el daño como objetivo es mayor al daño como daño colateral; 2) el de acción: el daño como acción es mayor al daño como omisión; 3) el de contacto: el daño físico es peor al daño no físico. Diversos investigadores se han preguntado si el juicio moral es  controlado o es un proceso automático (Bargh, 1999). El desarrollo  moral de los niños se enfoca en justificaciones más que en juicios (Kohlberg, 1969). La gente genera juicios morales al razonar sobre su propia justificación y si los juicios  morales surgen de un proceso auto cognitivo (Haidt. 2001).
 
-No obstante, hay una falta de método experimental que vincula los datos al juicio moral. El estudio de Harvard compara juicios entre algunos pares de escenarios variados para enfocarse en un factor a la vez. Este factor cuando varía produce juicios morales divergentes. Se estudiaron a personas de 37 años en promedio, 58% hombres, angloparlantes de EEUU, Canadá y Reino Unido, 25% tuvieron educación en  filosofía moral. Cada uno recibió 32 escenarios morales  separados en dos . Los sujetos los clasificaron en gravedad de la acción omisión de 1(prohibido) a 7 (obligatorio),  justificando sus respuestas
+No obstante, hay una falta de método experimental que 
+vincula los datos al juicio moral. El estudio de Harvard 
+compara juicios entre algunos pares de escenarios variados 
+para enfocarse en un factor a la vez. Este factor cuando 
+varía produce juicios morales divergentes. Se estudiaron a 
+personas de 37 años en promedio, 58% hombres, angloparlantes
+ de EEUU, Canadá y Reino Unido, 25% tuvieron educación en 
+ filosofía moral. Cada uno recibió 32 escenarios morales 
+ separados en dos . Los sujetos los clasificaron en gravedad
+  de la acción omisión de 1(prohibido) a 7 (obligatorio), 
+  justificando sus respuestas
 
+## Objetivando lo subjetivo
+
+La previa clasificación del problema del tranvía lidia con una dificultad 
+enorme: la subjetividad humana. Uno de los infinitos ejemplos de esto es la
+calificación que se le otorga a una película. Para mí, calificar una película
+con menos de 8 puede ser equivalente a, para ti, calificar una película con
+menos de 6. Realmente, consideramos a la película con la misma calificación
+abstracta, pero nuestra subjetividad lo está representando con distintos 
+números dentro de la misma escala. ¿Cómo ajustamos esto?
+
+Ya que tenemos la distribución con la cantidad de personas que asignaron cierto 
+valor de gravedad moral, la transformamos a una distribución acumulada. Así, por
+ejemplo, la cantidad en 3 pasa de ser del número de personas que asignaron 3 a
+el número de personas que asignaron 3 o menos. Después, convertimos los valores
+netos de la distribución a proporciones. Así, cada valor posible de los siete
+tendrá su respectiva proporción, de tal modo que aquellos que están en el
+más alto valor (7 o menos en este caso) será el 100%. De estas siete proporciones
+obtenidas, le aplicamos la función *logit* para obtener las logit acumuladas.
+Ahora tenemos seis puntos de corte (el séptimo tiende a infinito), donde la
+entrada $x$ de dichos puntos es lo que se obtuvo con *logit* y la entrada $y$ es
+la proporción. Gracias a esto, podemos expresar la probabilidad de que se asigne 
+uno de los valores clasificatorios como si fuera proveniente de una distribución 
+continua (cuando antes se trataba como discreta), donde ahora la probabilidad de 
+que alguien elija el valor $x$ es la probabilidad acumulada de que elija $x$ 
+menos la probabilidad acumulada de que elija $x-1$. Dicho de otro modo, ahora 
+esa probabilidad se mide como la diferencia entre ese punto de corte y el 
+anterior. Por último, añadimos una variable compensatoria en forma de función 
+lineal $\phi_i=\beta x_i$ de tal modo que, finalmente, podemos declarar que
+las respuestas se distribuyen OrderedLogit$(\phi_i,\alpha)$, donde $\alpha$ es
+el vector de los puntos de corte.
 
 ## Problema del tranvía (trolley problem)
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+```
+
+
+```{r}
+grViz("
+digraph {
+  graph [ranksep = 0.2]
+  node [shape=plaintext]
+  edge [minlen = 3]
+    X -> R
+    S -> R
+    E -> R
+    Y -> R
+    G -> R
+    Y -> E
+    G -> E
+}
+")
+```
+
 Descripción de variables.
 
 case: Identifica la historia que se presento a los sujetos, cada una tiene una combinación diferente de tratamientos (*string*)
@@ -126,6 +189,20 @@ table(datos$contact) %>%prop.table()
 table(datos$action2) %>%prop.table()
 ```
 
+## Expresión analítica de densidad de probabilidad de log-probabilidades categóricas ordenadas (*Ordered categorical log-odds probability density* en inglés)
+
+Sea Y la respuesta tal que $ Y = 1,2,...,J $, con probabilidades asociadas $ \pi_1,\pi_2,...,\pi_j $.
+
+La probabilidad acumulada de respuesta menor o igual a j es:
+
+$$ P(Y \leq j) = \pi_1 + ... + \pi_j $$
+
+Entonces, el modelo cumulativo logit está definido como:
+
+$$ \frac{P(Y \leq j)}{P(Y > j)} = \frac{P(Y \leq j)}{1 - P(Y \leq j)} = log\frac{\pi_1+...+p_j}{\pi_{j+1}+...+\pi{J}}$$
+
+Lo cual son los log-odds de que ocurra $Y \leq j$
+
 ## Modelo Stan
 
 Los autores plantean variantes de tres modelos: 1) un modelo básico donde 
@@ -140,6 +217,7 @@ edu_new <- edu_levels[ datos$edu ]
 
 data_list <- list(
     "N" = N,
+    "K" = 7,
     "R" = datos$response,
     "A" = datos$action,
     "I" = datos$intention,
@@ -150,10 +228,11 @@ data_list <- list(
 ```
 
 ```{r}
-#setwd("./final_met_analit_mcd/final.ma/")
-destino_dir<-""
-ruta_1 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_1.stan")
-modelo_1 <- cmdstan_model(ruta, dir=destino_dir)
+setwd("./sandbox_R/final_met_analit_mcd")
+
+destino_dir<-"final_ma/"
+ruta_1 <- file.path("final_ma/trolley_stan_1.stan")
+modelo_1 <- cmdstan_model(ruta_1, dir=destino_dir)
 
 #ruta_2 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_2.stan")
 #modelo_2 <- cmdstan_model(ruta, dir=destino_dir)
