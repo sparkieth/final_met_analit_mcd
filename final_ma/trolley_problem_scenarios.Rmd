@@ -247,7 +247,6 @@ la respuesta está en función de la acción, intención y contacto; 2) un model
 #renv::restore()
 N<-nrow(datos)
 edu_levels <- c( 6 , 1 , 8 , 4 , 7 , 2 , 5 , 3 )
-edu_new <- edu_levels[ datos$edu ]
 
 data_list <- list(
     "N" = N,
@@ -256,8 +255,8 @@ data_list <- list(
     "A" = datos$action,
     "I" = datos$intention,
     "C" = datos$contact,
-    "G" =doatos$
-    "E" = edu_new,
+    "G" =datos$gender,
+    "E" = edu_levels[ datos$edu ],
     "Y" = standardize(datos$age)
 )
 ```
@@ -295,8 +294,6 @@ muestras_2 <- modelo_2$sample(data = data_list,
                           iter_warmup=500, 
                           seed=483892929, 
                           refresh=500) %>% saveCache(pathname="final_ma/")
-
-
 ```
 ```{r}
 
@@ -307,7 +304,20 @@ precis(muestras_2,2)
 data_list$G1 <- ifelse(data_list$G==1,1,0)
 data_list$G2 <- ifelse(data_list$G==2,1,0)
 
-muestras_3 <- modelo_3$sample(data = data_list, 
+datos1<-datos %>% filter(male==1)
+datal_list_female<-list( "N" = N,
+    "K" = 7,
+    "R" = datos1$response,
+    "A" = datos1$action,
+    "I" = datos1$intention,
+    "C" = datos1$contact,
+    "G" =datos1$male,
+    "E" = edu_levels[datos1$edu],
+    "Y" = standardize(datos1$age)
+
+)
+
+muestras_3_male <- modelo_3$sample(data = data_list_female, 
                           chains = 3, 
                           iter=1500, 
                           iter_warmup=500, 
