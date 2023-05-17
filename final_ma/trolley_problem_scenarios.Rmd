@@ -247,14 +247,12 @@ muestras_1 <- modelo_1$sample(data = data_list,
                           iter=1500, 
                           iter_warmup=500, 
                           seed=483892929, 
-                          refresh=500)
-
-
+                          refresh=500) %>% saveCache(pathname="final_ma/")
 
 ```
 
 ```{r}
-precis(muestras_1,2)
+precis(loadCache(muestras_1),2)
 ```
 
 ```{r}
@@ -263,27 +261,31 @@ muestras_2 <- modelo_2$sample(data = data_list,
                           iter=1500, 
                           iter_warmup=500, 
                           seed=483892929, 
-                          refresh=500)
+                          refresh=500) %>% saveCache(pathname="final_ma/")
 
 
+```
+```{r}
+muestras_1<-muestras_1 %>% saveCache(pathname="final_ma/")
+muestras_2<-muestras_2 %>% saveCache(pathname="final_ma/")
+precis(loadCache(muestras_2),2)
 ```
 
 ```{r}
 data_list$G1 <- ifelse(data_list$G==1,1,0)
 data_list$G2 <- ifelse(data_list$G==2,1,0)
-# muestras_3 <- modelo_3$sample(data = data_list, 
-#                           chains = 3, 
-#                           iter=1500, 
-#                           iter_warmup=500, 
-#                           seed=483892929, 
-#                           refresh=500)
-muestras_13<-modelo_3$optimize(data = data_list,seed = 212121,
-refresh = 500,
-  iter = 1500,
-  iter_warmup=500,
-  chains=3
-)
 
+muestras_3 <- modelo_3$sample(data = data_list, 
+                          chains = 3, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500) %>% saveCache(pathname="final_ma/")
+
+
+```
+```{r}
+precis(loadCache(muestras_3),2)
 ```
 
 
