@@ -233,39 +233,58 @@ destino_dir<-"final_ma/"
 ruta_1 <- file.path("final_ma/trolley_stan_1.stan")
 modelo_1 <- cmdstan_model(ruta_1, dir=destino_dir)
 
-#ruta_2 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_2.stan")
-#modelo_2 <- cmdstan_model(ruta, dir=destino_dir)
-#ruta_3 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_dirichlet.stan")
-#modelo_3 <- cmdstan_model(ruta, dir=destino_dir)
+ruta_2 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_2.stan")
+modelo_2 <- cmdstan_model(ruta, dir=destino_dir)
+ruta_3 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_dirichlet.stan")
+modelo_3 <- cmdstan_model(ruta, dir=destino_dir)
 
 ```
 ```{r}
-muestras_1 <- modelo_1$sample(data = data_list, 
-                          chains = 4, 
-                          iter=1500, 
-                          iter_warmup=500, 
-                          seed=483892929, 
-                          refresh=500)
+# muestras_1 <- modelo_1$sample(data = data_list, 
+#                           chains = 3, 
+#                           iter=1500, 
+#                           iter_warmup=500, 
+#                           seed=483892929, 
+#                           refresh=500)
+muestras_11<-modelo_1$optimize(data = data_list,seed = 212121,
+refresh = 500,
+  iter = 1500,
+  iter_warmup=500,
+  chains=3
+)
 
-```
-
-```{r}
-muestras_2 <- modelo_2$sample(data = data_list, 
-                          chains = 4, 
-                          iter=1500, 
-                          iter_warmup=500, 
-                          seed=483892929, 
-                          refresh=500)
 
 ```
 
 ```{r}
-muestras_3 <- modelo_3$sample(data = data_list, 
-                          chains = 4, 
-                          iter=1500, 
-                          iter_warmup=500, 
-                          seed=483892929, 
-                          refresh=500)
+# muestras_2 <- modelo_2$sample(data = data_list, 
+#                           chains = 3, 
+#                           iter=1500, 
+#                           iter_warmup=500, 
+#                           seed=483892929, 
+#                           refresh=500)
+muestras_12<-modelo_2$optimize(data = data_list,seed = 212121,
+refresh = 500,
+  iter = 1500,
+  iter_warmup=500,
+  chains=3
+)
+
+```
+
+```{r}
+# muestras_3 <- modelo_3$sample(data = data_list, 
+#                           chains = 3, 
+#                           iter=1500, 
+#                           iter_warmup=500, 
+#                           seed=483892929, 
+#                           refresh=500)
+muestras_13<-modelo_3$optimize(data = data_list,seed = 212121,
+refresh = 500,
+  iter = 1500,
+  iter_warmup=500,
+  chains=3
+)
 
 ```
 

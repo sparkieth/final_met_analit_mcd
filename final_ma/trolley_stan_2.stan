@@ -37,4 +37,3 @@ model {
     R[i] ~ ordered_logistic(alpha + bA*A[i] + bI*I[i] + bC*C[i]+ bE*E[i] + bY*Y[i],CC);
 }
   
-}
