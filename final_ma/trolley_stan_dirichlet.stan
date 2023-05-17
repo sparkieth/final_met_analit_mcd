@@ -20,9 +20,8 @@ parameters {
   vector[2] bC;
   vector[2] bE;
   vector[2] bY;
-  simplex[K] deltaF;
-  simplex[K] deltaM;
-  real alpha; 
+  real alpha;
+  vector<lower=0>[K] a;
   ordered[K-1] CC;
 }
     
@@ -36,24 +35,30 @@ model {
   bE[i] ~ normal( 0 , 0.5 );
   bY[i] ~ normal( 0 , 0.5 );
    }  
-
+  alpha ~ normal(0, 1);
   for(m in 1:K){
-        a[m] ~gamma(0.1,0.1);
-        deltaF[m] ~ dirichlet(a[m]);
-        deltaM[m] ~ dirichlet(a[m]);
+  a[m] ~gamma(0.1,0.1);
   } 
 
   for(k in 2:K){
-    CC[k-1] ~ normal(0, 1);
+  CC[k-1] ~ normal(0, 1);
   }
-  
-  alpha ~ normal(0,1);
   
     for (i in 1:N){
     for(G in 1:2){
-    R[i] ~ ordered_logistic(alpha + bA * A[i] + bI * I[i] + 
-                            bC * C[i] + bY[i]*Y + G1*bE[G]*sum(deltaF[1:7]) + 
+    R[i] ~ ordered_logistic(alpha + bA[G] * A[i] + bI[G] * I[i] + 
+                            bC[G] * C[i] + bY[G]*Y[i] + G1*bE[G]*sum(deltaF[1:7]) + 
                             G2*bE[G]*sum(deltaM[1:7]), CC);
-  }}
 
+                       
+  }}
 }
+generated quantities{
+   vector[K] deltaM;
+   vector[K] deltaF;
+   for(m in 1:K){
+   deltaM[m]= dirichlet_rng(a[m]);
+   deltaF[m]= dirichlet_rng(a[m]);
+   }
+ }
+

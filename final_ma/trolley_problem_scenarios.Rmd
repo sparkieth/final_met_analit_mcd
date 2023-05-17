@@ -299,11 +299,8 @@ muestras_2 <- modelo_2$sample(data = data_list,
 
 ```
 ```{r}
-install.packages("R.cache")
-library(R.cache)
-muestras_1<-muestras_1 %>% saveCache(pathname="final_ma/")
-muestras_2<-muestras_2 %>% saveCache(pathname="final_ma/")
-precis(loadCache(muestras_2),2)
+
+precis(muestras_2,2)
 ```
 
 ```{r}
@@ -328,5 +325,6 @@ precis(loadCache(muestras_3),2)
 
 - Cushman, F., Young, L., & Hauser, M. (2006). The role of 
 conscious reasoning and intuition in moral judgment: 
-Testing three principles of harm. *Psychological science*, 1082-1089.- Stan User's Guide. Ordered logistic regression and probit regression, 
+Testing three principles of harm. *Psychological science*, 1082-1089
+- Stan User's Guide. Ordered logistic regression and probit regression, 
 https://mc-stan.org/docs/2_23/stan-users-guide/ordered-logistic-section.html
