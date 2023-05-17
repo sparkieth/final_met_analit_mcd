@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ---
 title: "Proyecto Final Métodos Analíticos"
 output: html_document
@@ -610,5 +610,4 @@ muestras_3 <- modelo_3$sample(data = data_list,
 
 - Cushman, F., Young, L., & Hauser, M. (2006). The role of 
 conscious reasoning and intuition in moral judgment: 
->>>>>>> 1b278cea748bbe437094d27a3dcc368ed0b679ae
 Testing three principles of harm. *Psychological science*, 1082-1089.
