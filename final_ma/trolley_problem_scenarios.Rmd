@@ -284,7 +284,7 @@ muestras_1 <- modelo_1$sample(data = data_list,
 ```
 
 ```{r}
-precis(loadCache(muestras_1),2)
+precis(muestras_1,2)
 ```
 
 ```{r}
@@ -327,7 +327,7 @@ muestras_3_male <- modelo_3$sample(data = data_list_female,
 
 ```
 ```{r}
-precis(loadCache(muestras_3),2)
+precis(muestras_3_male,2)
 ```
 
 

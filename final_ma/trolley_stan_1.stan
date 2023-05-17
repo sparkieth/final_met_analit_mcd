@@ -1,4 +1,4 @@
-// código para correr modelo base de trolley problem en stan
+// código para correr modelo b+asico de trolley problem en stan
 
 data{
   int<lower=0> N;

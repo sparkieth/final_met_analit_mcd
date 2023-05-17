@@ -55,6 +55,11 @@ model {
   CC[k-1] ~ normal(0, 1);
   }
 
+    for (i in 1:N){
+  R[i] ~ordered_logistic(alpha + bA * A[i] + bI * I[i] + bC * C[i] + bY*Y[i] + bE*deltaF1*G1[i] + 
+                            bE*deltaM1*G2[i], CC);                  
+  }
+}
 
   generated quantities{
 
@@ -62,16 +67,11 @@ model {
   deltaM[m]=mean(dirichlet_rng(rep_vector(10,K-1)));
   deltaF[m]=mean(dirichlet_rng(rep_vector(10,K-1)));
   }
-  
 
-  for (i in 1:N){
-  R[i] ~ordered_logistic(alpha + bA * A[i] + bI * I[i] + bC * C[i] + bY*Y[i] + bE*deltaF1*G1[i] + 
-                            bE*deltaM1*G2[i], CC);                  
-  }
 
 
   }
-}
+
 
 
 
