@@ -6,53 +6,61 @@ data {
   array[N] int A; 
   array[N] int I; 
   array[N] int C;
+  array[N] int<lower=0,upper=1> G1;
+  array[N] int<lower=0,upper=1> G2;
+
 
 }
 
 parameters {
-  real bA;   
-  real bI;   
-  real bC;   
-  real bE;   
+ 
+  vector[2] bA;
+  vector[2] bI;
+  vector[2] bC;
+  vector[2] bE;
+  vector[2] bY;
+  simplex[K] deltaF;
+  simplex[K] deltaM;
+  vector[K+1] deltaF_j;
+  vector[K+1] deltaM_j;
   real alpha; 
-  simplex[K] delta;
   ordered[K-1] CC;
 }
 
 transformed parameters {
-  vector[K+1] delta_j;             // appended delta values
 
-  delta_j[1] = 0;
-  delta_j[2:K+1] = delta;
+  deltaF_j = append_row( 0 , deltaF );
+  deltaM_j = append_row( 0 , deltaM );
 }
-        R ~ ordered_logistic( phi , alpha ),
-        phi <- G1*bE[G]*sum( deltaF_j[1:E] ) + 
-               G2*bE[G]*sum( deltaM_j[1:E] ) + 
-               bA[G]*A + bI[G]*I + bC[G]*C +
-               bY[G]*Y,
-        alpha ~ normal( 0 , 1 ),
-        bA[G] ~ normal( 0 , 0.5 ),
-        bI[G] ~ normal( 0 , 0.5 ),
-        bC[G] ~ normal( 0 , 0.5 ),
-        bE[G] ~ normal( 0 , 0.5 ),
-        bY[G] ~ normal( 0 , 0.5 ),
-        vector[8]: deltaF_j <<- append_row( 0 , deltaF ),
-        vector[8]: deltaM_j <<- append_row( 0 , deltaM ),
-        simplex[7]: deltaF ~ dirichlet( a ),
-        simplex[7]: deltaM ~ dirichlet( a )
+    
 
 model {
-  alpha ~ normal(0, 1);                // prior for the intercept
-  bA ~ normal(0, 0.5);                 // prior for bA
-  bI ~ normal(0, 0.5);                 // prior for bI
-  bC ~ normal(0, 0.5);                 // prior for bC
-  bE ~ normal(0, 0.5);                 // prior for bE
-  delta ~ dirichlet(rep_vector(1, 8)); // prior for delta_j
 
-   for (k in 1:K-1) {
-    CC[k] ~ normal(0, 1);
+  for(i in 1:2){
+  bA[i] ~ normal( 0 , 0.5 );
+  bI[i] ~ normal( 0 , 0.5 );
+  bC[i] ~ normal( 0 , 0.5 );
+  bE[i] ~ normal( 0 , 0.5 );
+  bY[i] ~ normal( 0 , 0.5 );
+   }  
+
+  for(m in 1:K){
+        a[m] ~gamma(0.1,0.1);
+        deltaF[m] ~ dirichlet(a[m]);
+        deltaM[m] ~ dirichlet(a[m]);
+        CC[k-1] ~ normal(0, 1);
   } 
+  
+  alpha ~ normal(0,1);
 
-  for (i in 1:N)
-    R[i] ~ ordered_logistic(bE * sum(delta_j[1:K+1]) + bA * A[i] + bI * I[i] + bC * C[i], CC);
+  }
+
+  for (i in 1:N){
+    for(G in 1:2){
+    R[i] ~ ordered_logistic(alpha + bA * A[i] + bI * I[i] + 
+                            bC * C[i] + bY[k]*Y + G1*bE[G]*sum( deltaF_j[1:7] ) + 
+                            G2*bE[G]*sum( deltaM_j[1:7] ), CC);
+  }}
+
+
 }
