@@ -221,6 +221,7 @@ data_list <- list(
     "A" = datos$action,
     "I" = datos$intention,
     "C" = datos$contact,
+    "G" =doatos$
     "E" = edu_new,
     "Y" = standardize(datos$age)
 )
@@ -233,46 +234,42 @@ destino_dir<-"final_ma/"
 ruta_1 <- file.path("final_ma/trolley_stan_1.stan")
 modelo_1 <- cmdstan_model(ruta_1, dir=destino_dir)
 
-ruta_2 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_2.stan")
-modelo_2 <- cmdstan_model(ruta, dir=destino_dir)
-ruta_3 <- file.path("sandbox_R/final_met_analit_mcd/final_ma/trolley_stan_dirichlet.stan")
-modelo_3 <- cmdstan_model(ruta, dir=destino_dir)
+ruta_2 <- file.path("final_ma/trolley_stan_2.stan")
+modelo_2 <- cmdstan_model(ruta_2, dir=destino_dir)
+ruta_3 <- file.path("final_ma/trolley_stan_dirichlet.stan")
+modelo_3 <- cmdstan_model(ruta_3, dir=destino_dir)
 
 ```
 ```{r}
-# muestras_1 <- modelo_1$sample(data = data_list, 
-#                           chains = 3, 
-#                           iter=1500, 
-#                           iter_warmup=500, 
-#                           seed=483892929, 
-#                           refresh=500)
-muestras_11<-modelo_1$optimize(data = data_list,seed = 212121,
-refresh = 500,
-  iter = 1500,
-  iter_warmup=500,
-  chains=3
-)
+muestras_1 <- modelo_1$sample(data = data_list, 
+                          chains = 3, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500)
+
 
 
 ```
 
 ```{r}
-# muestras_2 <- modelo_2$sample(data = data_list, 
-#                           chains = 3, 
-#                           iter=1500, 
-#                           iter_warmup=500, 
-#                           seed=483892929, 
-#                           refresh=500)
-muestras_12<-modelo_2$optimize(data = data_list,seed = 212121,
-refresh = 500,
-  iter = 1500,
-  iter_warmup=500,
-  chains=3
-)
+precis(muestras_1,2)
+```
+
+```{r}
+muestras_2 <- modelo_2$sample(data = data_list, 
+                          chains = 3, 
+                          iter=1500, 
+                          iter_warmup=500, 
+                          seed=483892929, 
+                          refresh=500)
+
 
 ```
 
 ```{r}
+data_list$G1 <- ifelse(data_list$G==1,1,0)
+data_list$G2 <- ifelse(data_list$G==2,1,0)
 # muestras_3 <- modelo_3$sample(data = data_list, 
 #                           chains = 3, 
 #                           iter=1500, 
