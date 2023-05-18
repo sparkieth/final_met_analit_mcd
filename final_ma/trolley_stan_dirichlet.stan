@@ -20,17 +20,20 @@ parameters {
   real bE;
   real bY;
   real alpha;
-  vector[K] a;
   ordered[K-1] CC;
-  simplex[K-1] deltaM;
-  simplex[K-1] deltaF;
-  //simplex[K-1] deltaM;
-  //simplex[K-1] deltaF;
 }
 
 transformed parameters{
-  real deltaM1=sum(deltaM[1:K-1]);
-  real deltaF1=sum(deltaF[1:K-1]);
+  real deltaM1=sum(deltaMx[1:K-1]);
+  real deltaF1=sum(deltaFx[1:K-1]);
+
+  //real deltaM1;
+  //real deltaF1;
+
+  //deltaM1[1]=0;
+  //deltaM1[2:K]=deltaM[1:K];
+    //deltaF1[1]=0;
+  //deltaF1[2:K]=deltaF[1:K];
 }
 
 model {
@@ -41,10 +44,6 @@ model {
   bY ~ normal( 0 , 0.5 );
     
   alpha ~ normal(0, 1);
-
-  for(m in 1:K-1){
-  a[m] ~gamma(0.1,0.1);
-  }
 
   //  for (m in 1:K-1) {
   //  deltaM[m] ~ dirichlet(a);
@@ -62,15 +61,15 @@ model {
 }
 
   generated quantities{
-
-  for(m in 1:K-1){
-  deltaM[m]=mean(dirichlet_rng(rep_vector(10,K-1)));
-  deltaF[m]=mean(dirichlet_rng(rep_vector(10,K-1)));
+    simplex[K-1] deltaMx;
+    simplex[K-1] deltaFx;
+  
+  deltaMx=dirichlet_rng(rep_vector(10,K-1));
+  deltaFx=dirichlet_rng(rep_vector(10,K-1));
   }
 
 
 
-  }
 
 
 

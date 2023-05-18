@@ -32,7 +32,8 @@ library(gt)
 library(tidyverse)
 library(DiagrammeR)
 library(R.cache)
-setwd("./sandbox_R/final_met_analit_mcd")
+library(rmarkdown)
+#setwd("./sandbox_R/final_met_analit_mcd")
 
 data(Trolley)
 datos<-Trolley
@@ -243,7 +244,7 @@ Los autores plantean variantes de tres modelos: 1) un modelo básico donde
 la respuesta está en función de la acción, intención y contacto; 2) un modelo  donde se añaden variables de educación y edad, y 
 3) un modelo donde se añade una variable aleatoria Dirichlet 
 
-```{r}
+```{r, include=FALSE}
 #renv::restore()
 N<-nrow(datos)
 edu_levels <- c( 6 , 1 , 8 , 4 , 7 , 2 , 5 , 3 )
@@ -255,39 +256,40 @@ data_list <- list(
     "A" = datos$action,
     "I" = datos$intention,
     "C" = datos$contact,
-    "G" =datos$gender,
+    "G" =datos$male,
     "E" = edu_levels[ datos$edu ],
     "Y" = standardize(datos$age)
 )
 ```
 
-```{r}
-
+```{r, include=FALSE}
 
 destino_dir<-"final_ma/"
 ruta_1 <- file.path("final_ma/trolley_stan_1.stan")
 modelo_1 <- cmdstan_model(ruta_1, dir=destino_dir)
 ruta_2 <- file.path("final_ma/trolley_stan_2.stan")
 modelo_2 <- cmdstan_model(ruta_2, dir=destino_dir)
-ruta_3 <- file.path("final_ma/trolley_stan_dirichlet.stan")
-modelo_3 <- cmdstan_model(ruta_3, dir=destino_dir)
+#ruta_3 <- file.path("final_ma/trolley_stan_dirichlet.stan")
+#modelo_3 <- cmdstan_model(ruta_3, dir=destino_dir)
 
 ```
-```{r}
+```{r, include=FALSE}
 muestras_1 <- modelo_1$sample(data = data_list, 
                           chains = 3, 
                           iter=1500, 
                           iter_warmup=500, 
                           seed=483892929, 
-                          refresh=500) %>% saveCache(pathname="final_ma/")
+                          refresh=500) 
 
 ```
 
-```{r}
+```{r, include=FALSE}
 precis(muestras_1,2)
 ```
 
-```{r}
+
+
+```{r, include=FALSE}
 muestras_2 <- modelo_2$sample(data = data_list, 
                           chains = 3, 
                           iter=1500, 
@@ -295,17 +297,16 @@ muestras_2 <- modelo_2$sample(data = data_list,
                           seed=483892929, 
                           refresh=500) %>% saveCache(pathname="final_ma/")
 ```
-```{r}
+```{r, include=FALSE}
 
 precis(muestras_2,2)
 ```
 
-```{r}
-data_list$G1 <- ifelse(data_list$G==1,1,0)
-data_list$G2 <- ifelse(data_list$G==2,1,0)
+```{r, include=FALSE}
 
 datos1<-datos %>% filter(male==1)
-datal_list_female<-list( "N" = N,
+N1<-nrow(datos1)
+data_list_female<-list( "N" = N1,
     "K" = 7,
     "R" = datos1$response,
     "A" = datos1$action,
@@ -317,16 +318,19 @@ datal_list_female<-list( "N" = N,
 
 )
 
-muestras_3_male <- modelo_3$sample(data = data_list_female, 
+data_list_female$G1 <- ifelse(data_list_female$G==1,1,0)
+data_list_female$G2 <- ifelse(data_list_female$G==2,1,0)
+
+muestras_3_female <- modelo_3$sample(data = data_list_female, 
                           chains = 3, 
                           iter=1500, 
                           iter_warmup=500, 
                           seed=483892929, 
-                          refresh=500) %>% saveCache(pathname="final_ma/")
+                          refresh=500) 
 
 
 ```
-```{r}
+```{r, include=FALSE}
 precis(muestras_3_male,2)
 ```
 
@@ -336,5 +340,44 @@ precis(muestras_3_male,2)
 - Cushman, F., Young, L., & Hauser, M. (2006). The role of 
 conscious reasoning and intuition in moral judgment: 
 Testing three principles of harm. *Psychological science*, 1082-1089
+- RDocumentation, 
 - Stan User's Guide. Ordered logistic regression and probit regression, 
 https://mc-stan.org/docs/2_23/stan-users-guide/ordered-logistic-section.html
+
+
+
+-----
+## Anexos
+
+### Cambio de ulam a Stan
+
+```{r, include=FALSE}
+library(rethinking)
+library(animation)
+library(ellipse)
+library(gtools) # provides rdirichlet
+
+data_list$G1 <- ifelse(data_list$G==1,1,0)
+data_list$G2 <- ifelse(data_list$G==2,1,0)
+data_list$a <- rep(2,7)
+mRXEYG2t <- ulam(
+    alist(
+        R ~ ordered_logistic( phi , alpha ),
+        phi <- G1*bE[G]*sum( deltaF_j[1:E] ) + 
+               G2*bE[G]*sum( deltaM_j[1:E] ) + 
+               bA[G]*A + bI[G]*I + bC[G]*C +
+               bY[G]*Y,
+        alpha ~ normal( 0 , 1 ),
+        bA[G] ~ normal( 0 , 0.5 ),
+        bI[G] ~ normal( 0 , 0.5 ),
+        bC[G] ~ normal( 0 , 0.5 ),
+        bE[G] ~ normal( 0 , 0.5 ),
+        bY[G] ~ normal( 0 , 0.5 ),
+        vector[8]: deltaF_j <<- append_row( 0 , deltaF ),
+        vector[8]: deltaM_j <<- append_row( 0 , deltaM ),
+        simplex[7]: deltaF ~ dirichlet( a ),
+        simplex[7]: deltaM ~ dirichlet( a )
+    ), data=data_list , chains=3 , cores=4 , threads=2 )
+
+stan_dirichlet<-mRXEYG2t$tanmodel
+```
